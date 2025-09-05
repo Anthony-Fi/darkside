@@ -1,0 +1,26 @@
+# Do not send dev files and large data into Docker build context
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+.git
+.gitignore
+.dockerignore
+
+# Build artifacts
+coverage
+build
+dist
+
+# Big tiles and raw data — mount as volumes at runtime instead
+tiles/
+tiles_viirs/
+tiles_legacy/
+**/*.tif
+**/*.tiff
+**/*.geotiff
+viirs_2024.*
+
+# Local configs
+.env

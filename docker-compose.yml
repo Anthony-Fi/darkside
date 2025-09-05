@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    image: aurora-night:latest
+    container_name: aurora-night
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      # Mount a legacy tiles directory and point the app to it
+      - LEGACY_TILES_DIR=/usr/src/app/tiles_legacy
+    volumes:
+      # Mount generated tiles and optional legacy tiles read-only
+      - ./tiles_viirs:/usr/src/app/tiles_viirs:ro
+      - ./tiles:/usr/src/app/tiles:ro
+      - ./tiles_legacy:/usr/src/app/tiles_legacy:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:'+ (process.env.PORT||3000) + '/health', r=>{ if(r.statusCode!==200) process.exit(1) }).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

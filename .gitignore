@@ -1,0 +1,34 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+
+# Build/test artifacts
+coverage/
+dist/
+build/
+
+# Tiles and large datasets (mount or store elsewhere)
+tiles/
+tiles_viirs/
+tiles_legacy/
+**/*.tif
+**/*.tiff
+**/*.geotiff
+viirs_2024.*
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/

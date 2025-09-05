@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>DarkSide | Aurora Dark Sky Map for Northern Lights</title>
+    <meta name="description" content="Find dark skies to see the Northern Lights. DarkSide shows light pollution across Europe and beyond so aurora hunters can pick the darkest spots for the best viewing.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://darkside.aurora-help.com/">
+    <meta name="theme-color" content="#0d1a2b">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="DarkSide | Aurora Dark Sky Map">
+    <meta property="og:description" content="Find dark skies to see the Northern Lights across Europe.">
+    <meta property="og:url" content="https://darkside.aurora-help.com/">
+    <meta property="og:image" content="https://darkside.aurora-help.com/viirs_2024.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="DarkSide | Aurora Dark Sky Map">
+    <meta name="twitter:description" content="Find dark skies to see the Northern Lights across Europe.">
+    <meta name="twitter:image" content="https://darkside.aurora-help.com/viirs_2024.png">
+
+    <!-- Preconnects for performance -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://{s}.tile.openstreetmap.org" crossorigin>
+    <link rel="preconnect" href="https://{s}.basemaps.cartocdn.com" crossorigin>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Control Geocoder CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "DarkSide",
+      "url": "https://darkside.aurora-help.com/",
+      "description": "Find dark skies to see the Northern Lights. Light pollution map for aurora hunters.",
+      "inLanguage": "en"
+    }
+    </script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="brand">
+            <span class="logo-dot" aria-hidden="true"></span>
+            <h1 class="brand-title">DarkSide</h1>
+        </div>
+        <p class="tagline">Find darker skies for better Northern Lights viewing</p>
+    </header>
+
+    <main class="page">
+        <div class="map-frame" role="region" aria-label="Light pollution map for aurora hunters">
+            <div id="map"></div>
+        </div>
+    </main>
+
+    <!-- Overlay to dim the map (controlled via slider) -->
+    <div id="map-dimmer"></div>
+
+    <div id="info-panel" aria-live="polite">
+        <h2>Light Pollution Map</h2>
+        <p>Lower light means better aurora visibility. Use the slider to dim base map.</p>
+        <div id="legend">
+            <h3>Light Pollution Levels</h3>
+            <div id="legend-content"></div>
+        </div>
+
+        <div id="controls">
+            <label for="darkness-slider">Map darkness</label>
+            <input type="range" id="darkness-slider" min="0" max="85" value="30" />
+            <div class="toggle-row">
+                <label class="toggle-label"><input type="checkbox" id="dark-mode-toggle" checked> Dark mode</label>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <p>© <span id="year"></span> DarkSide • An aurora-help.com project</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Control Geocoder JS -->
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <!-- Custom JS -->
+    <script>
+      // Set footer year
+      document.addEventListener('DOMContentLoaded', function(){
+        var y = document.getElementById('year');
+        if (y) y.textContent = new Date().getFullYear();
+      });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

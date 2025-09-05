@@ -1,0 +1,10 @@
+# robots.txt for DarkSide Aurora Dark Sky Map
+User-agent: *
+Allow: /
+
+# Prevent indexing tile endpoints (not useful search content)
+Disallow: /tiles/
+Disallow: /tiles_viirs/
+Disallow: /tiles_legacy/
+
+Sitemap: https://darkside.aurora-help.com/sitemap.xml

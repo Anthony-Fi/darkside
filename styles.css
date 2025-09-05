@@ -1,0 +1,224 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0d1a2b; /* deep blue for dark adaptation (not pure black) */
+    color: #e6f1ff; /* high-contrast on deep blue */
+}
+
+/* Map fills the frame container */
+#map {
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+}
+
+/* Info panel floats above map */
+#info-panel {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    max-width: 320px;
+    border: 1px solid rgba(0,0,0,0.05);
+    backdrop-filter: saturate(120%) blur(6px);
+}
+
+#info-panel h1,
+#info-panel h2 {
+    color: #333;
+    font-size: 1.5em;
+    margin-bottom: 5px;
+}
+
+#info-panel p {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+#legend {
+    margin-top: 15px;
+}
+
+#legend h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+}
+
+.legend-label {
+    font-size: 0.9em;
+    color: #333;
+}
+
+/* Dark UI theme */
+body.dark-ui #info-panel {
+    background: rgba(14, 32, 54, 0.92); /* themed dark panel */
+    color: #e6f1ff;
+    border: 1px solid rgba(50, 210, 150, 0.25);
+}
+body.dark-ui #info-panel h1,
+body.dark-ui #info-panel h2,
+body.dark-ui #info-panel p,
+body.dark-ui #legend h3,
+body.dark-ui .legend-label,
+body.dark-ui #controls label {
+    color: #e6f1ff;
+}
+body.dark-ui .legend-color { border-color: #555; }
+body.dark-ui #map-dimmer { background: #000; }
+
+/* Map dimmer overlay covers map but allows interactions to pass through */
+#map-dimmer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    opacity: 0.3; /* default matches slider initial value (30) */
+    pointer-events: none;
+    z-index: 300; /* above base tiles (200), below overlays (400) and controls (1000) */
+    display: none; /* brightness now handled via CSS filter on base tile pane */
+}
+
+/* Controls */
+#controls {
+    margin-top: 15px;
+}
+
+#controls label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9em;
+    color: #333;
+}
+
+#darkness-slider {
+    width: 100%;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #info-panel {
+        max-width: 200px;
+        padding: 10px;
+    }
+    
+    #info-panel h1 {
+        font-size: 1.2em;
+    }
+}
+
+/* Header and Footer */
+.site-header, .site-footer {
+    width: 100%;
+    padding: 12px 20px;
+    color: #cfe8ff;
+}
+.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-title { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
+.logo-dot { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #67f3a3, #2bb673 60%, #0e2036 100%); box-shadow: 0 0 12px rgba(50,210,150,0.8); }
+.tagline { opacity: 0.85; font-size: 0.95rem; }
+.site-footer { text-align: center; opacity: 0.8; font-size: 0.9rem; }
+
+/* Page layout and framed map */
+.page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px 16px;
+}
+.map-frame {
+    position: relative;
+    width: 90vw;              /* ~90% of desktop width */
+    height: 90vh;             /* ~90% of desktop height */
+    max-width: 1400px;
+    border-radius: 16px;
+    border: 1px solid rgba(50, 210, 150, 0.35); /* aurora green */
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+}
+
+/* Leaflet control theming for dark background */
+.leaflet-control-attribution, .leaflet-control-scale {
+    background: rgba(13, 26, 43, 0.75) !important;
+    color: #cfe8ff !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(4px) saturate(120%);
+}
+.leaflet-control a { color: #a7d7ff; }
+
+/* Geocoder control theming */
+.leaflet-control-geocoder {
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+.leaflet-control-geocoder .leaflet-control-geocoder-form input {
+    background: transparent;
+    color: #0e2036;
+}
+.leaflet-control-geocoder .leaflet-control-geocoder-alternatives a {
+    color: #0e2036;
+}
+
+/* Dark UI variant */
+body.dark-ui .leaflet-control-geocoder {
+    background: rgba(13, 26, 43, 0.92);
+    color: #e6f1ff;
+    border: 1px solid rgba(50, 210, 150, 0.25);
+}
+body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-form input {
+    color: #e6f1ff;
+}
+body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-alternatives a {
+    color: #cfe8ff;
+}
+
+/* Nearest-neighbor scaling for overzoomed tiles */
+.leaflet-tile.nearest-neighbor {
+    /* Modern browsers */
+    image-rendering: pixelated;
+    /* Fallbacks */
+    image-rendering: crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    /* Legacy IE */
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .map-frame { width: 100vw; height: 72vh; border-radius: 0; }
+    .site-header, .site-footer { padding: 10px 12px; }
+}
