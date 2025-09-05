@@ -20,7 +20,8 @@ ENV LEGACY_TILES_DIR=""
 EXPOSE 3000
 
 # Healthcheck hitting the Express /health endpoint
+# Use 127.0.0.1 (avoid IPv6 resolution quirks), consume response, and exit explicitly
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT||3000) + '/health', r=>{ if(r.statusCode!==200) process.exit(1) }).on('error',()=>process.exit(1))" || exit 1
+  CMD node -e "require('http').get('http://127.0.0.1:' + (process.env.PORT||3000) + '/health', r=>{ if(r.statusCode===200){ r.resume(); process.exit(0) } else { process.exit(1) } }).on('error',()=>process.exit(1))" || exit 1
 
 CMD ["node", "server.js"]

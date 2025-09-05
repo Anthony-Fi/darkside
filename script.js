@@ -49,8 +49,8 @@ const darkBaseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z
     maxZoom: 19
 });
 
-// Add light pollution layer from our local tile server
-const lightPollutionLayer = L.tileLayer('http://localhost:3000/tiles_viirs/{z}/{x}/{y}.png?v=' + Date.now(), {
+// Add light pollution layer from our server (relative URL so it works behind reverse proxies like Caddy)
+const lightPollutionLayer = L.tileLayer('/tiles_viirs/{z}/{x}/{y}.png?v=' + Date.now(), {
     attribution: 'Light Pollution Data: VIIRS 2024',
     minZoom: 0,
     maxZoom: 12,
@@ -70,7 +70,7 @@ const lightPollutionLayer = L.tileLayer('http://localhost:3000/tiles_viirs/{z}/{
 lightPollutionLayer.addTo(map);
 
 // Legacy overlay layer (uses pre-generated legacy tiles if available)
-const legacyOverlayLayer = L.tileLayer('http://localhost:3000/tiles_legacy/{z}/{x}/{y}.png?v=' + Date.now(), {
+const legacyOverlayLayer = L.tileLayer('/tiles_legacy/{z}/{x}/{y}.png?v=' + Date.now(), {
     attribution: 'Legacy Overlay',
     minZoom: 0,
     maxZoom: 12,
