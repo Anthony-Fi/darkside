@@ -34,6 +34,54 @@ body, html {
     backdrop-filter: saturate(120%) blur(6px);
 }
 
+/* Collapsible behavior */
+#info-panel .panel-inner {
+    /* ensure content doesn't sit under the toggle */
+    padding-top: 4px;
+}
+
+#info-panel.collapsed .panel-inner {
+    display: none;
+}
+
+#info-panel.collapsed {
+    padding: 8px;
+    width: auto;
+    max-width: none;
+    min-width: 56px; /* ensure enough area for the toggle */
+    min-height: 56px;
+}
+
+.info-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.95);
+    color: #0e2036;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.info-toggle:hover {
+    filter: brightness(0.98);
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
+}
+
 #info-panel h1,
 #info-panel h2 {
     color: #333;
@@ -76,6 +124,11 @@ body, html {
 /* Dark UI theme */
 body.dark-ui #info-panel {
     background: rgba(14, 32, 54, 0.92); /* themed dark panel */
+    color: #e6f1ff;
+    border: 1px solid rgba(50, 210, 150, 0.25);
+}
+body.dark-ui .info-toggle {
+    background: rgba(13, 26, 43, 0.92);
     color: #e6f1ff;
     border: 1px solid rgba(50, 210, 150, 0.25);
 }
@@ -126,6 +179,7 @@ body.dark-ui #map-dimmer { background: #000; }
         max-width: 200px;
         padding: 10px;
     }
+    .info-toggle { width: 44px; height: 44px; }
     
     #info-panel h1 {
         font-size: 1.2em;
@@ -147,6 +201,19 @@ body.dark-ui #map-dimmer { background: #000; }
 .brand-title { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
 .logo-dot { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #67f3a3, #2bb673 60%, #0e2036 100%); box-shadow: 0 0 12px rgba(50,210,150,0.8); }
 .tagline { opacity: 0.85; font-size: 0.95rem; }
+.site-header .external-link {
+    color: #cfe8ff;
+    opacity: 0.85;
+    text-decoration: none;
+    margin-left: 12px;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+.site-header .external-link:hover,
+.site-header .external-link:focus {
+    color: #ffffff;
+    opacity: 1;
+    text-decoration: underline;
+}
 .site-footer { text-align: center; opacity: 0.8; font-size: 0.9rem; }
 
 /* Page layout and framed map */

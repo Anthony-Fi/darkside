@@ -223,3 +223,45 @@ if (darkModeToggle) {
     // Initialize state
     applyDarkModeToggle();
 }
+
+// Collapsible info panel toggle with persisted state
+(function initInfoPanelToggle(){
+    const infoPanel = document.getElementById('info-panel');
+    const infoToggle = document.getElementById('info-toggle');
+    if (!infoPanel || !infoToggle) return;
+
+    function setCollapsed(collapsed) {
+        infoPanel.classList.toggle('collapsed', collapsed);
+        const expanded = !collapsed;
+        infoPanel.setAttribute('aria-expanded', String(expanded));
+        infoToggle.setAttribute('aria-expanded', String(expanded));
+        infoToggle.title = collapsed ? 'Expand panel' : 'Minimize panel';
+        // Use a simple arrow glyph to indicate state
+        infoToggle.lastChild && (infoToggle.lastChild.nodeType === Node.TEXT_NODE)
+            ? (infoToggle.lastChild.textContent = collapsed ? '▸' : '▾')
+            : null;
+        const sr = infoToggle.querySelector('.visually-hidden');
+        if (sr) sr.textContent = expanded ? 'Collapse info panel' : 'Expand info panel';
+        try { localStorage.setItem('infoPanelCollapsed', String(collapsed)); } catch (e) {}
+    }
+
+    // Determine initial state from localStorage, else default collapsed on small screens
+    let initialCollapsed = false;
+    try {
+        const saved = localStorage.getItem('infoPanelCollapsed');
+        if (saved === 'true' || saved === 'false') {
+            initialCollapsed = saved === 'true';
+        } else {
+            initialCollapsed = window.matchMedia('(max-width: 768px)').matches;
+        }
+    } catch (e) {
+        initialCollapsed = window.matchMedia('(max-width: 768px)').matches;
+    }
+
+    setCollapsed(initialCollapsed);
+
+    infoToggle.addEventListener('click', function(){
+        const nowCollapsed = !infoPanel.classList.contains('collapsed');
+        setCollapsed(nowCollapsed);
+    });
+})();

@@ -57,6 +57,7 @@
             <h1 class="brand-title">DarkSide</h1>
         </div>
         <p class="tagline">Find darker skies for better Northern Lights viewing</p>
+        <a href="https://www.aurora-help.com/" class="external-link" target="_blank" rel="noopener" title="Space weather tools" aria-label="Space weather tools">aurora-help.com</a>
     </header>
 
     <main class="page">
@@ -68,19 +69,25 @@
     <!-- Overlay to dim the map (controlled via slider) -->
     <div id="map-dimmer"></div>
 
-    <div id="info-panel" aria-live="polite">
-        <h2>Light Pollution Map</h2>
-        <p>Lower light means better aurora visibility. Use the slider to dim base map.</p>
-        <div id="legend">
-            <h3>Light Pollution Levels</h3>
-            <div id="legend-content"></div>
-        </div>
+    <div id="info-panel" class="collapsible" aria-live="polite" aria-expanded="true">
+        <button id="info-toggle" class="info-toggle" aria-controls="info-panel" aria-expanded="true" title="Minimize panel" type="button">
+            <span class="visually-hidden">Toggle info panel</span>
+            ▾
+        </button>
+        <div class="panel-inner">
+            <h2>Light Pollution Map</h2>
+            <p>Lower light means better aurora visibility. Use the slider to dim base map.</p>
+            <div id="legend">
+                <h3>Light Pollution Levels</h3>
+                <div id="legend-content"></div>
+            </div>
 
-        <div id="controls">
-            <label for="darkness-slider">Map darkness</label>
-            <input type="range" id="darkness-slider" min="0" max="85" value="30" />
-            <div class="toggle-row">
-                <label class="toggle-label"><input type="checkbox" id="dark-mode-toggle" checked> Dark mode</label>
+            <div id="controls">
+                <label for="darkness-slider">Map darkness</label>
+                <input type="range" id="darkness-slider" min="0" max="85" value="30" />
+                <div class="toggle-row">
+                    <label class="toggle-label"><input type="checkbox" id="dark-mode-toggle" checked> Dark mode</label>
+                </div>
             </div>
         </div>
     </div>
