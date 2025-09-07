@@ -7,10 +7,14 @@ services:
     container_name: aurora-night
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       - PORT=3000
       # Mount a legacy tiles directory and point the app to it
       - LEGACY_TILES_DIR=/usr/src/app/tiles_legacy
+      # Optional default if not provided in .env
+      - OWM_LAYER=${OWM_LAYER:-clouds}
     volumes:
       # Mount generated tiles and optional legacy tiles read-only
       - ./tiles_viirs:/usr/src/app/tiles_viirs:ro
