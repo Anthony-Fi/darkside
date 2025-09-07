@@ -36,6 +36,12 @@ map.on('moveend', () => setMinZoomForTargetScaleKm(TARGET_KM));
 map.createPane('lightOverlayPane');
 map.getPane('lightOverlayPane').style.zIndex = 450; // above base tiles (200) and dimmer (300)
 
+// Satellite overlay pane removed (unused)
+
+// Create a pane for forecast overlays (e.g., Open-Meteo) above basemap and below light pollution
+map.createPane('forecastOverlayPane');
+map.getPane('forecastOverlayPane').style.zIndex = 420;
+
 // Add OpenStreetMap tiles as base layer
 const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -54,12 +60,11 @@ const lightPollutionLayer = L.tileLayer('/tiles_viirs/{z}/{x}/{y}.png?v=' + Date
     attribution: 'Light Pollution Data: VIIRS 2024',
     minZoom: 0,
     maxZoom: 12,
-    // OVERZOOM TEST: Force Leaflet to upscale z8 tiles at z9 (doubles the size without adding detail).
-    // Remove this line or set to 9 to use native z9 tiles once you're done testing.
+    // Allow overzooming beyond native z8 tiles
     maxNativeZoom: 8,
     tileSize: 256,
     className: 'nearest-neighbor',
-    opacity: 0.7,
+    opacity: 0.6,
     zIndex: 10,
     pane: 'lightOverlayPane',
     crossOrigin: true,
@@ -69,29 +74,36 @@ const lightPollutionLayer = L.tileLayer('/tiles_viirs/{z}/{x}/{y}.png?v=' + Date
 // Add the light pollution layer to the map
 lightPollutionLayer.addTo(map);
 
-// Legacy overlay layer (uses pre-generated legacy tiles if available)
-const legacyOverlayLayer = L.tileLayer('/tiles_legacy/{z}/{x}/{y}.png?v=' + Date.now(), {
-    attribution: 'Legacy Overlay',
-    minZoom: 0,
-    maxZoom: 12,
+// Satellite overlay removed per user request (previously NASA GIBS VIIRS True Color)
+
+// Current clouds via OpenWeatherMap, served through our server-side cached proxy
+// The server caches each tile for 2 minutes and caps upstream zoom to z<=8
+const openMeteoCloudsUrl = '/owm_clouds/{z}/{x}/{y}.png';
+const openMeteoCloudsLayer = L.tileLayer(openMeteoCloudsUrl, {
+    attribution: 'Current clouds: OpenWeatherMap (server‑cached)',
     tileSize: 256,
-    className: 'nearest-neighbor',
-    opacity: 0.7,
-    zIndex: 10,
-    pane: 'lightOverlayPane',
-    crossOrigin: true,
-    // OVERZOOM TEST: match behavior with new overlay, upscale beyond z8 using parent tiles
+    maxZoom: 12,
+    // Many forecast tile services provide native tiles up to ~z8; overzoom higher
     maxNativeZoom: 8,
+    opacity: 0.85,
+    zIndex: 6,
+    pane: 'forecastOverlayPane',
+    crossOrigin: true,
     noWrap: true
 });
 
-// Debug logging for tile requests
-lightPollutionLayer.on('tileload', (e) => {
-    console.log('Tile loaded:', e.tile && e.tile.src ? e.tile.src : e);
+// Show current forecast clouds by default
+openMeteoCloudsLayer.addTo(map);
+
+// Minimal debug logging for forecast tiles to verify layer activity
+openMeteoCloudsLayer.on('tileload', (e) => {
+    try { console.debug('Forecast tile loaded:', e && e.coords ? e.coords : e); } catch (_) {}
 });
-lightPollutionLayer.on('tileerror', (e) => {
-    console.warn('Tile error:', e && e.coords ? e.coords : e);
+openMeteoCloudsLayer.on('tileerror', (e) => {
+    try { console.warn('Forecast tile error:', e && e.coords ? e.coords : e); } catch (_) {}
 });
+
+// (legacy overlay and extra debug logging removed)
 
 // Create legend for light pollution levels
 function createLegend() {
@@ -176,11 +188,78 @@ const baseLayers = {
 };
 
 const overlayLayers = {
-    "Light Pollution (New)": lightPollutionLayer,
-    "Light Pollution (Legacy)": legacyOverlayLayer
+    "Current Clouds (OWM cached)": openMeteoCloudsLayer,
+    "Light Pollution": lightPollutionLayer
 };
 
 L.control.layers(baseLayers, overlayLayers).addTo(map);
+
+// Opacity control for Forecast Clouds and Light Pollution overlays
+// Provides sliders to adjust overlay opacities without changing layer order
+const CloudOpacityControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function () {
+        const container = L.DomUtil.create('div', 'leaflet-bar cloud-opacity-control');
+        // Basic styling to be readable on both light/dark basemaps
+        container.style.padding = '8px';
+        container.style.background = 'rgba(0,0,0,0.55)';
+        container.style.backdropFilter = 'blur(2px)';
+        container.style.color = '#fff';
+        container.style.minWidth = '180px';
+        container.style.font = '12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+        container.style.userSelect = 'none';
+
+        const title = L.DomUtil.create('div', 'cloud-opacity-title', container);
+        title.textContent = 'Overlay Opacity';
+        title.style.fontWeight = '600';
+        title.style.marginBottom = '6px';
+
+        function addSlider(labelText, initialFraction, onChange) {
+            const wrap = L.DomUtil.create('div', 'cloud-opacity-row', container);
+            wrap.style.marginBottom = '6px';
+
+            const label = L.DomUtil.create('div', 'cloud-opacity-label', wrap);
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.justifyContent = 'space-between';
+            label.style.marginBottom = '2px';
+            label.textContent = labelText;
+
+            const value = L.DomUtil.create('span', 'cloud-opacity-value', label);
+            value.textContent = `(${Math.round(initialFraction * 100)}%)`;
+            value.style.marginLeft = '6px';
+            value.style.opacity = '0.9';
+
+            const input = L.DomUtil.create('input', 'cloud-opacity-input', wrap);
+            input.type = 'range';
+            input.min = '0';
+            input.max = '100';
+            input.value = String(Math.round(initialFraction * 100));
+            input.style.width = '100%';
+
+            input.addEventListener('input', () => {
+                const f = Math.max(0, Math.min(1, Number(input.value) / 100));
+                value.textContent = `(${Math.round(f * 100)}%)`;
+                try { onChange(f); } catch (e) { /* no-op */ }
+            });
+        }
+
+        // Prevent map interactions when using the control
+        L.DomEvent.disableClickPropagation(container);
+        L.DomEvent.disableScrollPropagation(container);
+
+        // Initial values reflect layer options
+        const fcstInit = typeof openMeteoCloudsLayer.options.opacity === 'number' ? openMeteoCloudsLayer.options.opacity : 0.85;
+        const lpInit = typeof lightPollutionLayer.options.opacity === 'number' ? lightPollutionLayer.options.opacity : 0.6;
+        addSlider('Clouds', fcstInit, (f) => openMeteoCloudsLayer.setOpacity(f));
+        addSlider('Light Pollution', lpInit, (f) => lightPollutionLayer.setOpacity(f));
+
+        return container;
+    }
+});
+
+// Add the opacity control to the map
+new CloudOpacityControl().addTo(map);
 
 // Darkness slider dims only the base tile pane via CSS filter
 const darknessSlider = document.getElementById('darkness-slider');
