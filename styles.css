@@ -255,7 +255,25 @@ body.dark-ui #map-dimmer { background: #000; }
 .leaflet-control-geocoder .leaflet-control-geocoder-form input {
     background: transparent;
     color: #0e2036;
+    /* Add some breathing room from the magnifying glass and increase height slightly */
+    padding-left: 12px;      /* move caret away from the icon */
+    padding-top: 6px;        /* taller input */
+    padding-bottom: 6px;     /* taller input */
+    font-size: 105%;         /* ~5% taller text to increase control height */
 }
+.leaflet-control-geocoder .leaflet-control-geocoder-icon {
+    margin-right: 6px;       /* space between icon button and input text */
+}
+/* Placeholder colors for light mode */
+.leaflet-control-geocoder .leaflet-control-geocoder-form input::placeholder {
+    color: #000;
+    opacity: 0.7;
+}
+/* Cross-browser placeholders (light mode) */
+.leaflet-control-geocoder .leaflet-control-geocoder-form input::-webkit-input-placeholder { color: #000; opacity: 0.7; }
+.leaflet-control-geocoder .leaflet-control-geocoder-form input::-moz-placeholder { color: #000; opacity: 0.7; }
+.leaflet-control-geocoder .leaflet-control-geocoder-form input:-ms-input-placeholder { color: #000; opacity: 0.7; }
+.leaflet-control-geocoder .leaflet-control-geocoder-form input::-ms-input-placeholder { color: #000; opacity: 0.7; }
 .leaflet-control-geocoder .leaflet-control-geocoder-alternatives a {
     color: #0e2036;
 }
@@ -269,6 +287,16 @@ body.dark-ui .leaflet-control-geocoder {
 body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-form input {
     color: #e6f1ff;
 }
+/* Placeholder colors for dark mode */
+body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-form input::placeholder {
+    color: #fff;
+    opacity: 0.85;
+}
+/* Cross-browser placeholders (dark mode) */
+body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-form input::-webkit-input-placeholder { color: #fff; opacity: 0.85; }
+body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-form input::-moz-placeholder { color: #fff; opacity: 0.85; }
+body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-form input:-ms-input-placeholder { color: #fff; opacity: 0.85; }
+body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-form input::-ms-input-placeholder { color: #fff; opacity: 0.85; }
 body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-alternatives a {
     color: #cfe8ff;
 }

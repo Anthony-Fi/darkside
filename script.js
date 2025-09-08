@@ -3,34 +3,11 @@
 // Adjust maxZoom as needed (e.g., 11 ~32 m/px, 12 ~16 m/px, 13 ~8 m/px near 65°N).
 // Cap zooming OUT so the view doesn't go wider than ~500 km (~300 mi) at typical desktop widths near 65°N.
 // Approximate minZoom for this region: 7 (about ~500–700 km across depending on viewport width).
-const map = L.map('map', { maxZoom: 12, minZoom: 7, zoomSnap: 1 });
-// Finland approximate bounding box: [southWestLat, southWestLng], [northEastLat, northEastLng]
-const finlandBounds = L.latLngBounds([59.5, 20.5], [70.1, 31.6]);
-map.fitBounds(finlandBounds, { padding: [20, 20] });
+// Updated: Center on Jyväskylä, Finland at zoom level 3 for a light street map experience
+const map = L.map('map', { maxZoom: 12, minZoom: 6, zoomSnap: 1 });
+map.setView([62.2426, 25.7473], 3);
 
-// Dynamically cap zoom OUT so the scale bar tops out near ~500 km (~300 mi).
-// This targets the Leaflet scale control length (default maxWidth = 100 px), not the viewport width.
-// Tweak TARGET_KM if you want a different cap (e.g., 300 mi ≈ 482.8 km).
-const TARGET_KM = 500;
-const SCALE_MAX_WIDTH_PX = 100; // Leaflet scale control default
-function setMinZoomForTargetScaleKm(targetKm) {
-    const targetMeters = targetKm * 1000;
-    // Meters-per-pixel at zoom 0 for Web Mercator
-    const MPP_Z0 = 156543.03392804097;
-    const latRad = map.getCenter().lat * Math.PI / 180;
-    const cosLat = Math.max(0.0001, Math.cos(latRad)); // avoid div-by-zero at poles
-    // scale_length_m ≈ (MPP_Z0 * cos(lat) / 2^z) * SCALE_MAX_WIDTH_PX
-    // Solve for z such that scale_length_m <= targetMeters
-    const zFloat = Math.log2((MPP_Z0 * cosLat * SCALE_MAX_WIDTH_PX) / targetMeters);
-    const minZ = Math.ceil(zFloat);
-    // Safety clamp (Leaflet typical range)
-    const clamped = Math.max(0, Math.min(19, minZ));
-    map.setMinZoom(clamped);
-}
-
-setMinZoomForTargetScaleKm(TARGET_KM);
-map.on('resize', () => setMinZoomForTargetScaleKm(TARGET_KM));
-map.on('moveend', () => setMinZoomForTargetScaleKm(TARGET_KM));
+// Removed dynamic min-zoom capping to allow initial zoom 3 and typical street map behavior
 
 // Create a pane above base tiles for the light pollution overlay
 map.createPane('lightOverlayPane');
@@ -41,6 +18,23 @@ map.getPane('lightOverlayPane').style.zIndex = 450; // above base tiles (200) an
 // Create a pane for forecast overlays (e.g., Open-Meteo) above basemap and below light pollution
 map.createPane('forecastOverlayPane');
 map.getPane('forecastOverlayPane').style.zIndex = 420;
+
+// Destination markers for searched locations (keep multiple pins)
+let searchMarkers = [];
+function clearAllSearchPins() {
+    try {
+        searchMarkers.forEach(m => { try { map.removeLayer(m); } catch (_) {} });
+        searchMarkers = [];
+    } catch (_) {}
+}
+function removeLastSearchPin() {
+    try {
+        const m = searchMarkers.pop();
+        if (m) {
+            try { map.removeLayer(m); } catch (_) {}
+        }
+    } catch (_) {}
+}
 
 // Add OpenStreetMap tiles as base layer
 const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -169,11 +163,25 @@ if (typeof L.Control.Geocoder !== 'undefined') {
                 } else if (center) {
                     map.setView(center, Math.max(map.getZoom(), 9));
                 }
+
+                // Drop a new destination pin at the searched location
+                const dest = center || (bbox && bbox.getCenter && bbox.getCenter());
+                if (dest) {
+                    const label = (e.geocode && e.geocode.name) ? e.geocode.name : `${dest.lat.toFixed(5)}, ${dest.lng.toFixed(5)}`;
+                    const marker = L.marker(dest, { title: label }).addTo(map);
+                    marker.bindPopup(label).openPopup();
+                    searchMarkers.push(marker);
+                }
             }
-            // Collapse results list if available
-            if (geocoderControl && typeof geocoderControl._collapse === 'function') {
-                geocoderControl._collapse();
-            }
+            // Prepare control for another search: clear results, keep expanded, focus input
+            try { geocoderControl && geocoderControl._clearResults && geocoderControl._clearResults(); } catch (_) {}
+            try {
+                if (geocoderControl && geocoderControl._expand) geocoderControl._expand();
+                if (geocoderControl && geocoderControl._input) {
+                    geocoderControl._input.value = '';
+                    geocoderControl._input.focus();
+                }
+            } catch (_) {}
         } catch (err) {
             console.warn('Geocoder handling error:', err);
         }
@@ -260,6 +268,36 @@ const CloudOpacityControl = L.Control.extend({
 
 // Add the opacity control to the map
 new CloudOpacityControl().addTo(map);
+
+// Simple control to clear all search pins
+const ClearPinsControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function () {
+        const container = L.DomUtil.create('div', 'leaflet-bar');
+        const btn = L.DomUtil.create('a', '', container);
+        btn.href = '#';
+        btn.title = 'Clear pins';
+        btn.innerHTML = '✕';
+        btn.style.lineHeight = '26px';
+        btn.style.width = '28px';
+        btn.style.textAlign = 'center';
+        btn.style.fontWeight = '700';
+        btn.setAttribute('aria-label', 'Clear pins');
+        L.DomEvent.on(btn, 'click', (e) => {
+            L.DomEvent.stop(e);
+            clearAllSearchPins();
+        });
+        // Avoid map drag/zoom when using the control
+        L.DomEvent.disableClickPropagation(container);
+        L.DomEvent.disableScrollPropagation(container);
+        return container;
+    }
+});
+
+new ClearPinsControl().addTo(map);
+
+// Click on the map to remove the most recent pin
+map.on('click', removeLastSearchPin);
 
 // Darkness slider dims only the base tile pane via CSS filter
 const darknessSlider = document.getElementById('darkness-slider');
