@@ -312,6 +312,22 @@ body.dark-ui .leaflet-control-geocoder .leaflet-control-geocoder-alternatives a 
     -ms-interpolation-mode: nearest-neighbor;
 }
 
+/* Overlay Opacity control (with cloud/lightbulb toggle) */
+.cloud-opacity-control {
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.cloud-opacity-control .opacity-header { cursor: default; }
+.cloud-opacity-control .opacity-toggle {
+    transition: filter 0.15s ease, background-color 0.15s ease;
+}
+.cloud-opacity-control .opacity-toggle:hover {
+    filter: brightness(1.1);
+}
+.cloud-opacity-control.collapsed { min-width: 44px; min-height: 44px; }
+.cloud-opacity-control.collapsed .opacity-header .cloud-opacity-title { display: none; }
+.cloud-opacity-control.collapsed .opacity-body { display: none; }
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .map-frame { width: 100vw; height: 72vh; border-radius: 0; }

@@ -204,6 +204,7 @@ L.control.layers(baseLayers, overlayLayers).addTo(map);
 
 // Opacity control for Forecast Clouds and Light Pollution overlays
 // Provides sliders to adjust overlay opacities without changing layer order
+// Now includes a mobile-friendly collapse/expand toggle with cloud/lightbulb icon
 const CloudOpacityControl = L.Control.extend({
     options: { position: 'topright' },
     onAdd: function () {
@@ -217,13 +218,42 @@ const CloudOpacityControl = L.Control.extend({
         container.style.font = '12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
         container.style.userSelect = 'none';
 
-        const title = L.DomUtil.create('div', 'cloud-opacity-title', container);
+        // Header with title and collapse toggle button
+        const header = L.DomUtil.create('div', 'opacity-header', container);
+        header.style.display = 'flex';
+        header.style.alignItems = 'center';
+        header.style.justifyContent = 'space-between';
+        header.style.gap = '8px';
+        header.style.marginBottom = '6px';
+
+        const title = L.DomUtil.create('div', 'cloud-opacity-title', header);
         title.textContent = 'Overlay Opacity';
         title.style.fontWeight = '600';
-        title.style.marginBottom = '6px';
+
+        const toggleBtn = L.DomUtil.create('button', 'opacity-toggle', header);
+        toggleBtn.type = 'button';
+        toggleBtn.title = 'Minimize overlay opacity panel';
+        toggleBtn.setAttribute('aria-label', 'Toggle overlay opacity panel');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        // Simple emoji icons to avoid external assets
+        toggleBtn.textContent = '☁️💡';
+        // Minimal inline styling; additional rules in CSS
+        toggleBtn.style.width = '32px';
+        toggleBtn.style.height = '32px';
+        toggleBtn.style.borderRadius = '999px';
+        toggleBtn.style.border = '1px solid rgba(255,255,255,0.35)';
+        toggleBtn.style.background = 'rgba(255,255,255,0.15)';
+        toggleBtn.style.color = '#fff';
+        toggleBtn.style.cursor = 'pointer';
+        toggleBtn.style.display = 'grid';
+        toggleBtn.style.placeItems = 'center';
+        toggleBtn.style.fontSize = '14px';
+
+        // Sliding controls body
+        const body = L.DomUtil.create('div', 'opacity-body', container);
 
         function addSlider(labelText, initialFraction, onChange) {
-            const wrap = L.DomUtil.create('div', 'cloud-opacity-row', container);
+            const wrap = L.DomUtil.create('div', 'cloud-opacity-row', body);
             wrap.style.marginBottom = '6px';
 
             const label = L.DomUtil.create('div', 'cloud-opacity-label', wrap);
@@ -261,6 +291,37 @@ const CloudOpacityControl = L.Control.extend({
         const lpInit = typeof lightPollutionLayer.options.opacity === 'number' ? lightPollutionLayer.options.opacity : 0.6;
         addSlider('Clouds', fcstInit, (f) => openMeteoCloudsLayer.setOpacity(f));
         addSlider('Light Pollution', lpInit, (f) => lightPollutionLayer.setOpacity(f));
+
+        // Collapse/expand behavior with persisted state
+        function setCollapsed(collapsed) {
+            container.classList.toggle('collapsed', collapsed);
+            body.style.display = collapsed ? 'none' : '';
+            title.style.display = collapsed ? 'none' : '';
+            container.style.minWidth = collapsed ? 'auto' : '180px';
+            container.style.padding = collapsed ? '6px' : '8px';
+            toggleBtn.setAttribute('aria-expanded', String(!collapsed));
+            toggleBtn.title = collapsed ? 'Expand overlay opacity panel' : 'Minimize overlay opacity panel';
+            try { localStorage.setItem('opacityPanelCollapsed', String(collapsed)); } catch (_) {}
+        }
+
+        let initialCollapsed = false;
+        try {
+            const saved = localStorage.getItem('opacityPanelCollapsed');
+            if (saved === 'true' || saved === 'false') {
+                initialCollapsed = saved === 'true';
+            } else {
+                initialCollapsed = window.matchMedia('(max-width: 768px)').matches;
+            }
+        } catch (_) {
+            initialCollapsed = window.matchMedia('(max-width: 768px)').matches;
+        }
+        setCollapsed(initialCollapsed);
+
+        L.DomEvent.on(toggleBtn, 'click', (e) => {
+            L.DomEvent.stop(e);
+            const nowCollapsed = !container.classList.contains('collapsed');
+            setCollapsed(nowCollapsed);
+        });
 
         return container;
     }
